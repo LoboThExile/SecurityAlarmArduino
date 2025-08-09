@@ -1,28 +1,57 @@
 # SecurityAlarmArduino
-A Security Alarm using an arduino by using lasers or an led to shine light towards a PhotoResistor.
 
+A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
 
-// [ COMPONENTS ]
+---
 
-// Microcontroller:
-// Arduino Nano, Arduino Uno, or ESP32 (Good for with related stuff.) any other microcontroller that supports C++. Using Arduino Uno for this case.
-// Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
+## Components
 
-// Resistors: 
-// (NOTE: Pack extra resistors just in case. Or bring the whole set at this point.)
-// 220 ohm resistors (x4), 10K ohm resistor (x1)(Still bring extra.)
+### Microcontroller
+- Arduino Nano, Arduino Uno, ESP32, or any microcontroller supporting C++  
+- (This project uses Arduino Uno for example)
+- Later, We might make an android app to connect to the wifi so it could connect to the servers (Using ESP32)
 
-// Other components:
-// Breadboard (Duhh..) <---------------- VERYY IMPORTANTT!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Photoresistor (x1), Button (x2), Buzzer (x1)
-// Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
+### LEDs and Sound
+- Buzzer (x1)  
+- LEDs: Red, Yellow, Green, White (or Laser module instead of White LED)  
+- Extra LEDs recommended for testing
 
-// Optional: 
-// Lazer (x1) (if you want to use a laser instead of a LED.),
-// Camera (Please look down below, Very important) (For recording the security footage if you want to.)
-//( However, this code does not have camera support.) <--------------------- [ ALSO IMPORTANT ]
+### Resistors
+- 220 Ω resistors (x4)  
+- 10 KΩ resistor (x1)  
+- You should bring more just in case.
 
-// ^^ Please buy or use a camera that supports C++ and Arduino. <--------------------- [ ALSO ALSO IMPORTANT ]
-// Like Adafruit TTL serial JPEG camera (Low resolution however uses less pins) (4 Pins, TX, RX, VCC, GND) (Recommended as it uses less pins)
-// Or Arducam Mini 2MP (Higher resolution and more features but uses more pins (6-7) (SDA, SCL, VCC, GND, CS, MOSI, MISO) (SPI interface))
+### Other Hardware
+- Breadboard (very important for wiring)  
+- Photoresistor (Light dependent resistor, x1)  <--- Bring a couple.
+- Buttons (x2)  
+- Jumper wires for connections <-- Bring a bunch.
+
+### Optional
+- Laser module (if you want to replace the white LED with a laser) <-- Later in this project, Will use laser.  
+- Camera module for recording footage **(not supported in this code)**  
+
+---
+
+## Camera Recommendations (Optional) **CURRENTLY NOT SUPPORTED**
+
+If you want to add camera support (requires separate code), consider these options: 
+
+- **Adafruit TTL Serial JPEG Camera**  
+  - Low resolution but uses fewer pins (4 pins: TX, RX, VCC, GND)  
+  - Recommended for simpler wiring  
+
+- **ArduCAM Mini 2MP**  
+  - Higher resolution and more features  
+  - Uses SPI interface and more pins (6-7 pins: SDA, SCL, VCC, GND, CS, MOSI, MISO)
+
+---
+
+## Notes
+
+- This code currently does **not** support camera integration.  
+- Make sure to select a camera compatible with Arduino and your wiring capabilities.
+
+---
+
 
