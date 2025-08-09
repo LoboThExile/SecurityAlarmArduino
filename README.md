@@ -17,7 +17,7 @@ A Security Alarm system using an Arduino with lasers or an LED shining light ont
 - Extra LEDs recommended for testing
 
 ### Resistors
-- 220 Ω resistors (x4)  
+- 220 Ω resistors (x4/x3)  
 - 10 KΩ resistor (x1)  
 - You should bring more just in case.
 
