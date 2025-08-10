@@ -24,7 +24,7 @@
 
 // Other components:
 // Breadboard (Duhh..) <---------------- VERYY IMPORTANTT!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Photoresistor (x1), Button (x2), Buzzer (x1)
+// Photoresistor (x1), Button (x3), Buzzer (x1)  // Updated: now 3 buttons (reset, silent, power off)
 // Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
 
 // Optional: 
@@ -68,6 +68,7 @@ const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
 const int resetPin = 8; // reset button (reset system when tripped) 
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
+const int powerOffPin = A1; // power off button (acts like first boot)
 
 // Camera and SD card pins
 const int cameraRX = 10; // Camera TX connects here
@@ -88,10 +89,13 @@ const unsigned long debounceDelay = 50; // debounce time in ms
 unsigned long previousMillis = 0; // for blink timing
 unsigned long lastResetDebounceTime = 0; // for reset button debouncing
 unsigned long lastSilentDebounceTime = 0; // for silent toggle button debouncing
+unsigned long lastPowerOffDebounceTime = 0; // for power off button debouncing
 
 bool blinkState = false; // LED blink state
 bool tripped = false; // system tripped state
 bool photoTaken = false; // flag to prevent multiple photos per trip
+bool systemOn = true; // system power state
+bool firstBoot = true; // flag for first boot initialization
 
 // debouncer reset button variables n such
 bool lastResetState = HIGH; // last state of reset button
@@ -100,6 +104,10 @@ bool resetState = HIGH; // current state of reset button
 // debouncer silent toggle button variables n such
 bool lastSilentState = HIGH; // last state of silent toggle button
 bool silentButtonState = HIGH; // current state of silent toggle button
+
+// debouncer power off button variables
+bool lastPowerOffState = HIGH; // last state of power off button
+bool powerOffButtonState = HIGH; // current state of power off button
 
 bool silentMode = false; // silent mode state
 
@@ -173,6 +181,64 @@ bool initializeSD() {
   return true;
 }
 
+void bootupsequence() {
+  if (silentMode) {
+    // Silent mode
+    digitalWrite(armedPin, HIGH);
+    digitalWrite(lightPin, LOW);
+    delay(500);
+    digitalWrite(silentIndicatorPin, HIGH);
+    
+    if (firstBoot) {
+      firstBoot = false;
+      cameraAvailable = initializeCamera();
+      sdAvailable = initializeSD();
+    }
+    
+    delay(1250);
+    digitalWrite(silentIndicatorPin, LOW);
+    digitalWrite(armedPin, LOW);
+    digitalWrite(ledPin, HIGH);
+    delay(50);
+    digitalWrite(ledPin, LOW);
+    digitalWrite(lightPin, HIGH);
+    digitalWrite(armedPin, HIGH);
+    return;
+  }
+  
+  // Normal with sound - first beep
+  tone(buzzerPin, 1000);
+  digitalWrite(armedPin, HIGH); 
+  digitalWrite(lightPin, LOW);
+  delay(50);
+  noTone(buzzerPin);
+  delay(500);
+  digitalWrite(silentIndicatorPin, HIGH);
+  
+  if (firstBoot) {
+    firstBoot = false;
+    cameraAvailable = initializeCamera();
+    sdAvailable = initializeSD();
+  }
+  
+  delay(1250);
+  digitalWrite(silentIndicatorPin, LOW);
+  
+  // Continue with remaining beeps
+  tone(buzzerPin, 500);
+  delay(50);
+  noTone(buzzerPin);
+  digitalWrite(armedPin, LOW);
+  digitalWrite(ledPin, HIGH);
+  delay(50);
+  tone(buzzerPin, 1500);
+  delay(50);
+  noTone(buzzerPin);
+  digitalWrite(ledPin, LOW);
+  digitalWrite(lightPin, HIGH);
+  digitalWrite(armedPin, HIGH);
+}
+
 void takeSecurityPhoto() {
   if (!sdAvailable || photoTaken) {
     Serial.println("Camera or SD card not available, or photo already taken.");
@@ -236,10 +302,10 @@ void takeSecurityPhoto() {
   delay(100);
   
   // Read and save image data
-  int bytesRead = 0;
+  uint16_t bytesRead = 0; // Changed to uint16_t to match pictureSize type
   unsigned long timeout = millis() + 5000; // 5 second timeout
   
-  while (bytesRead < pictureSize && millis() < timeout) { // Okay to ignore warning about sign and unsigned comparison here
+  while (bytesRead < pictureSize && millis() < timeout) {
     if (cameraSerial.available()) {
       byte data = cameraSerial.read();
       photoFile.write(data);
@@ -253,7 +319,7 @@ void takeSecurityPhoto() {
   
   photoFile.close();
   
-  if (bytesRead == pictureSize) { // Okay to ignore warning about sign and unsigned comparison here too.
+  if (bytesRead == pictureSize) {
     Serial.println();
     Serial.print("Photo saved: ");
     Serial.println(filename);
@@ -264,64 +330,62 @@ void takeSecurityPhoto() {
   }
 }
 
-void bootupsequence() {
-  static bool firstBoot = true;  // Only initialize on very first boot
+void powerOffSequence() {
+  Serial.println("Powering off system...");
   
-  if (silentMode) {
-    // Silent mode
-    digitalWrite(armedPin, HIGH);
-    digitalWrite(lightPin, LOW);
-    delay(500);
-    digitalWrite(silentIndicatorPin, HIGH);
-    
-    if (firstBoot) {
-      firstBoot = false;
-      cameraAvailable = initializeCamera();
-      sdAvailable = initializeSD();
-    }
-    
-    delay(1250);
-    digitalWrite(silentIndicatorPin, LOW);
-    digitalWrite(armedPin, LOW);
-    digitalWrite(ledPin, HIGH);
-    delay(50);
-    digitalWrite(ledPin, LOW);
-    digitalWrite(lightPin, HIGH);
-    digitalWrite(armedPin, HIGH);
-    return;
-  }
-  
-  // Normal with sound - first beep
-  tone(buzzerPin, 1000);
-  digitalWrite(armedPin, HIGH); 
+  // Turn off all LEDs except red LED (keep red on to show power is connected)
   digitalWrite(lightPin, LOW);
-  delay(50);
-  noTone(buzzerPin);
-  delay(500);
-  digitalWrite(silentIndicatorPin, HIGH);
-  
-  if (firstBoot) {
-    firstBoot = false;
-    cameraAvailable = initializeCamera();
-    sdAvailable = initializeSD();
-  }
-  
-  delay(1250);
+  digitalWrite(armedPin, LOW);
   digitalWrite(silentIndicatorPin, LOW);
   
-  // Continue with remaining beeps
-  tone(buzzerPin, 500);
-  delay(50);
+  // Stop buzzer
   noTone(buzzerPin);
-  digitalWrite(armedPin, LOW);
+  
+  if (!silentMode) {
+    // Power off sound sequence
+    tone(buzzerPin, 1500, 100);
+    delay(150);
+    tone(buzzerPin, 1000, 100);
+    delay(150);
+    tone(buzzerPin, 500, 200);
+    delay(250);
+  }
+  
+  // Reset all states
+  tripped = false;
+  blinkState = false;
+  photoTaken = false;
+  systemOn = false;
+  firstBoot = true; // Mark as first boot for next power on
+  
+  // Keep red LED on to indicate power is connected
   digitalWrite(ledPin, HIGH);
-  delay(50);
-  tone(buzzerPin, 1500);
-  delay(50);
-  noTone(buzzerPin);
+  
+  Serial.println("System powered off. Press power button to restart.");
+}
+
+void powerOnSequence() {
+  Serial.println("Powering on system...");
+  systemOn = true;
+  
+  // check initial silent mode state
+  silentMode = (digitalRead(silenttogglePin) == LOW);
+  
+  // set initial silent mode indicator
+  digitalWrite(silentIndicatorPin, silentMode ? HIGH : LOW);
+
   digitalWrite(ledPin, LOW);
-  digitalWrite(lightPin, HIGH);
-  digitalWrite(armedPin, HIGH);
+  
+  // Run bootup sequence which includes initialization
+  bootupsequence();
+  
+  Serial.println("Security Ready");
+  Serial.print("Silent Mode: ");
+  Serial.println(silentMode ? "ON" : "OFF");
+  Serial.print("Camera: ");
+  Serial.println(cameraAvailable ? "ENABLED" : "DISABLED");
+  Serial.print("SD Storage: ");
+  Serial.println(sdAvailable ? "ENABLED" : "DISABLED");
 }
 
 void setup() {
@@ -336,30 +400,42 @@ void setup() {
   pinMode(resetPin, INPUT_PULLUP);
   pinMode(armedPin, OUTPUT);
   pinMode(silentIndicatorPin, OUTPUT);
+  pinMode(powerOffPin, INPUT_PULLUP); // New power off button
   
-  // check initial silent mode state
-  silentMode = (digitalRead(silenttogglePin) == LOW);
-  
-  // set initial silent mode indicator
-  digitalWrite(silentIndicatorPin, silentMode ? HIGH : LOW);
-  
-  // startupp!Q!! (now includes initialization)
-  bootupsequence();
-  
-  Serial.println("Security Ready");
-  Serial.print("Silent Mode: ");
-  Serial.println(silentMode ? "ON" : "OFF");
-  Serial.print("Camera: ");
-  Serial.println(cameraAvailable ? "ENABLED" : "DISABLED");
-  Serial.print("SD Storage: ");
-  Serial.println(sdAvailable ? "ENABLED" : "DISABLED");
+  // Power on the system
+  powerOnSequence();
 }
 
 void loop() {
+  // Handle power off button first
+  unsigned long currentMillis = millis();
+  int powerOffReading = digitalRead(powerOffPin);
+  
+  if (powerOffReading != lastPowerOffState) {
+    lastPowerOffDebounceTime = currentMillis;
+  }
+  
+  if ((currentMillis - lastPowerOffDebounceTime) > debounceDelay) {
+    if (powerOffReading == LOW && powerOffButtonState == HIGH) {
+      if (systemOn) {
+        powerOffSequence();
+      } else {
+        powerOnSequence();
+      }
+    }
+    powerOffButtonState = powerOffReading;
+  }
+  lastPowerOffState = powerOffReading;
+  
+  // If system is off, skip all other operations
+  if (!systemOn) {
+    delay(100); // Small delay to prevent excessive CPU usage when off
+    return;
+  }
+  
   // read light sensor value
   int lightValue = analogRead(lightSensorPin);
   Serial.println(lightValue);
-  unsigned long currentMillis = millis();
 
   // get tripped noob
   if (lightValue < 60 && !tripped) {
@@ -380,6 +456,7 @@ void loop() {
       digitalWrite(ledPin, blinkState ? HIGH : LOW);
       Serial.println("im tweakin out");
       digitalWrite(lightPin, LOW);
+      digitalWrite(armedPin, LOW);
       
       // only sound if not in silent mode
       if (blinkState && !silentMode) {
