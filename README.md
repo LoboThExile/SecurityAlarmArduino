@@ -2,8 +2,8 @@
 
 A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
 
-## The Experimental build has camera support.
-**WARNING**: Experimental branch has not been tested yet.
+## The [experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) build has camera support.  
+**WARNING**: [Experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) branch has not been tested yet.
 
 ---
 
@@ -36,15 +36,15 @@ A Security Alarm system using an Arduino with lasers or an LED shining light ont
 
 ---
 
-## Camera Recommendations (Optional) (**ONLY IN EXPERIMENTAL BRANCH**) 
+## Camera Recommendations (Optional) (**ONLY IN [EXPERIMENTAL](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) BRANCH**) 
 
-If you want to add camera support **ONLY IN EXPERIMENTAL BRANCH** , consider these options: 
+If you want to add camera support **ONLY IN [EXPERIMENTAL](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) BRANCH**, consider these options: 
 
-- **Adafruit TTL Serial JPEG Camera**  (**Supported in experimental branch**)
+- **Adafruit TTL Serial JPEG Camera**  (**Supported in [experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) branch**)
   - Low resolution but uses fewer pins (4 pins: TX, RX, VCC, GND)  
   - Recommended for simpler wiring  
 
-- **ArduCAM Mini 2MP**  (**Not supported in experimental branch**)
+- **ArduCAM Mini 2MP**  (**Not supported in [experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) branch**)
   - Higher resolution and more features  
   - Uses SPI interface and more pins (6-7 pins: SDA, SCL, VCC, GND, CS, MOSI, MISO)
 
@@ -52,7 +52,7 @@ If you want to add camera support **ONLY IN EXPERIMENTAL BRANCH** , consider the
 
 ## Notes
 
-- This code currently does **not** support camera integration. Only in the **Experimental Branch** has camera intergration.  
+- This code currently does **not** support camera integration. Only in the **[Experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) Branch** has camera integration.  
 - Make sure to select a camera compatible with Arduino and your wiring capabilities.
 
 ---
@@ -60,4 +60,3 @@ If you want to add camera support **ONLY IN EXPERIMENTAL BRANCH** , consider the
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
-
