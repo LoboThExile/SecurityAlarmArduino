@@ -5,6 +5,8 @@ A Security Alarm system using an Arduino with lasers or an LED shining light ont
 ## Has camera support (Experimental)
 This code **HAS camera support** however it is **untested** and **unstable**
 
+### [Wiring](WIRING.md)
+
 ### Made for PBL.
 
 ---
