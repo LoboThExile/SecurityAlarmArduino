@@ -2,6 +2,8 @@
 
 A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
 
+**The Experimental build has cammera support.**
+
 ---
 
 ## Components
