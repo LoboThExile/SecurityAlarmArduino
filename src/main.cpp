@@ -8,7 +8,6 @@
 // ^^ Required for coding in VISUAL STUDIO CODE with PlatformIO. cuz yes
 // However, if you use the Arduino IDE, you don't need to include this header file.
 
-// M.Danish Hakimi
 // 3 Cerdik
 // For Project Based Learning
 // Security alarm using light or lasers(lazers?).
