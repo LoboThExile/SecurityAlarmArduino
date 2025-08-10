@@ -125,9 +125,22 @@ bool initializeCamera() {
       cameraSerial.read(); // clear buffer
     }
     Serial.println("Camera detected and initialized!");
+    tone(buzzerPin, 1000, 50); // Beep to indicate success
+    delay(50);
+    noTone(buzzerPin);
+    delay(25);
+    tone(buzzerPin, 1000, 50); // Beep again
     return true;
+
   } else {
     Serial.println("Camera not detected - camera features disabled");
+    tone(buzzerPin, 1000, 50); // Beep to indicate failure
+    delay(50);
+    noTone(buzzerPin);
+    delay(25);
+    tone(buzzerPin, 500, 50); // Beep again
+    delay(50);
+    noTone(buzzerPin);
     return false;
   }
 }
@@ -136,9 +149,21 @@ bool initializeSD() {
   // Initialize SD card
   if (!SD.begin(sdCS)) {
     Serial.println("SD card initialization failed - photo storage disabled");
+    tone(buzzerPin, 1000, 50); // Beep to indicate failure
+    delay(50);
+    noTone(buzzerPin);
+    delay(25);
+    tone(buzzerPin, 500, 50); // Beep again
+    delay(50);
+    noTone(buzzerPin);
     return false;
   }
   Serial.println("SD card initialized successfully!");
+  tone(buzzerPin, 1000, 50); // Beep to indicate success
+  delay(50);
+  noTone(buzzerPin);
+  delay(25);
+  tone(buzzerPin, 1000, 50); // Beep again
   
   // Create photos directory if it doesn't exist
   if (!SD.exists("/PHOTOS")) { // If /Photos directory not exist,
@@ -429,7 +454,7 @@ void loop() {
   }
   lastSilentState = silentReading;
 
-  delay(100);
+  delay(50); // small delay to prevent excessive CPU usage
 }
 // if wood chuck could chuck wood, how much wood would a wood chuck chuck if a wood chuck could chuck wood?
 // a wood chuck would chuck as much wood as a wood chuck could chuck if a wood chuck could chuck wood.
