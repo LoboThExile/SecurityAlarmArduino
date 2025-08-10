@@ -246,7 +246,7 @@ void bootupsequence() {
     // Silent mode
     digitalWrite(armedPin, HIGH);
     digitalWrite(lightPin, LOW);
-    delay(100);
+    delay(500);
     digitalWrite(silentIndicatorPin, HIGH);
     
     if (firstBoot) {
@@ -272,7 +272,7 @@ void bootupsequence() {
   digitalWrite(lightPin, LOW);
   delay(50);
   noTone(buzzerPin);
-  delay(50);
+  delay(500);
   digitalWrite(silentIndicatorPin, HIGH);
   
   if (firstBoot) {
@@ -301,6 +301,7 @@ void bootupsequence() {
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("Security System Initializing...");
 
   // sets up pins
   pinMode(silenttogglePin, INPUT_PULLUP); 
