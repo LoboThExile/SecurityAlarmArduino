@@ -40,7 +40,7 @@ This code **HAS camera support** however it is **untested** and **unstable**
 
 ---
 
-## Camera Recommendations (Optional) **Only supported in Expermental branch**
+## Camera Recommendations (Optional) **Only supported in Experimental branch**
 
 If you want to add camera support, consider these options: 
 
