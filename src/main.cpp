@@ -244,6 +244,7 @@ void takeSecurityPhoto() {
       byte data = cameraSerial.read();
       photoFile.write(data);
       bytesRead++;
+  
       
       if (bytesRead % 100 == 0) {
         Serial.print(".");
@@ -295,7 +296,7 @@ void bootupsequence() {
   tone(buzzerPin, 1000);
   digitalWrite(armedPin, HIGH); 
   digitalWrite(lightPin, LOW);
-  delay(50);
+  delay(50);// spreasy
   noTone(buzzerPin);
   delay(500);
   digitalWrite(silentIndicatorPin, HIGH);
