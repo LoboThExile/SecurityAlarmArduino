@@ -5,6 +5,8 @@ A Security Alarm system using an Arduino with lasers or an LED shining light ont
 ## The [experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) build has camera support.  
 **WARNING**: [Experimental](https://github.com/LoboThExile/SecurityAlarmArduino/tree/experimental) branch has not been tested yet.
 
+
+### [Wiring](WIRING.md)
 ---
 
 ## Components
