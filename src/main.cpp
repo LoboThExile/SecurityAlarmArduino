@@ -68,6 +68,7 @@ const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
 const int resetPin = 8; // reset button (reset system when tripped) 
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
+const int powerPin = A1; // power toggle button
 
 // Camera and SD card pins
 const int cameraRX = 10; // Camera TX connects here
@@ -88,10 +89,12 @@ const unsigned long debounceDelay = 50; // debounce time in ms
 unsigned long previousMillis = 0; // for blink timing
 unsigned long lastResetDebounceTime = 0; // for reset button debouncing
 unsigned long lastSilentDebounceTime = 0; // for silent toggle button debouncing
+unsigned long lastPowerDebounceTime = 0; // for power button debouncing
 
 bool blinkState = false; // LED blink state
 bool tripped = false; // system tripped state
 bool photoTaken = false; // flag to prevent multiple photos per trip
+bool isPoweredOn = true; // system power state
 
 // debouncer reset button variables n such
 bool lastResetState = HIGH; // last state of reset button
@@ -100,6 +103,8 @@ bool resetState = HIGH; // current state of reset button
 // debouncer silent toggle button variables n such
 bool lastSilentState = HIGH; // last state of silent toggle button
 bool silentButtonState = HIGH; // current state of silent toggle button
+bool lastPowerState = HIGH; // last state of power button
+bool powerButtonState = HIGH; // current state of power button
 
 bool silentMode = false; // silent mode state
 
@@ -337,6 +342,7 @@ void setup() {
   pinMode(resetPin, INPUT_PULLUP);
   pinMode(armedPin, OUTPUT);
   pinMode(silentIndicatorPin, OUTPUT);
+  pinMode(powerPin, INPUT_PULLUP);
   
   // check initial silent mode state
   silentMode = (digitalRead(silenttogglePin) == LOW);
@@ -357,10 +363,46 @@ void setup() {
 }
 
 void loop() {
+  unsigned long currentMillis = millis();
+
+  // Handle power button
+  int powerReading = digitalRead(powerPin);
+  
+  if (powerReading != lastPowerState) {
+    lastPowerDebounceTime = currentMillis;
+  }
+  
+  if ((currentMillis - lastPowerDebounceTime) > debounceDelay) {
+    if (powerReading == LOW && powerButtonState == HIGH) {
+      isPoweredOn = !isPoweredOn;
+      if (!isPoweredOn) {
+        // Turn off all outputs when powering down
+        digitalWrite(ledPin, LOW);
+        digitalWrite(lightPin, LOW);
+        digitalWrite(armedPin, LOW);
+        digitalWrite(silentIndicatorPin, LOW);
+        noTone(buzzerPin);
+        tripped = false;
+      } else {
+        // Run bootup sequence when powering on
+        bootupsequence();
+      }
+      Serial.print("Power: ");
+      Serial.println(isPoweredOn ? "ON" : "OFF");
+    }
+    powerButtonState = powerReading;
+  }
+  lastPowerState = powerReading;
+
+  // Only process security system if powered on
+  if (!isPoweredOn) {
+    delay(50);
+    return;
+  }
+
   // read light sensor value
   int lightValue = analogRead(lightSensorPin);
   Serial.println(lightValue);
-  unsigned long currentMillis = millis();
 
   // get tripped noob
   if (lightValue < 60 && !tripped) {
