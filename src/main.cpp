@@ -1,4 +1,3 @@
-
 #include <SoftwareSerial.h>
 #include <SdFat.h>
 #include <SPI.h>
@@ -240,14 +239,22 @@ void takeSecurityPhoto() {
   }
 }
 
-void bootupsequence() { // bootup sound n such (call bootupsequence() to use)
+void bootupsequence() {
+  static bool firstBoot = true;  // Only initialize on very first boot
+  
   if (silentMode) {
-    
-    // on silent mode (no sound)
+    // Silent mode
     digitalWrite(armedPin, HIGH);
     digitalWrite(lightPin, LOW);
     delay(100);
     digitalWrite(silentIndicatorPin, HIGH);
+    
+    if (firstBoot) {
+      firstBoot = false;
+      cameraAvailable = initializeCamera();
+      sdAvailable = initializeSD();
+    }
+    
     delay(1250);
     digitalWrite(silentIndicatorPin, LOW);
     digitalWrite(armedPin, LOW);
@@ -259,7 +266,7 @@ void bootupsequence() { // bootup sound n such (call bootupsequence() to use)
     return;
   }
   
-  // normal (with sound)
+  // Normal with sound - first beep
   tone(buzzerPin, 1000);
   digitalWrite(armedPin, HIGH); 
   digitalWrite(lightPin, LOW);
@@ -267,8 +274,17 @@ void bootupsequence() { // bootup sound n such (call bootupsequence() to use)
   noTone(buzzerPin);
   delay(50);
   digitalWrite(silentIndicatorPin, HIGH);
+  
+  if (firstBoot) {
+    firstBoot = false;
+    cameraAvailable = initializeCamera();
+    sdAvailable = initializeSD();
+  }
+  
   delay(1250);
   digitalWrite(silentIndicatorPin, LOW);
+  
+  // Continue with remaining beeps
   tone(buzzerPin, 500);
   delay(50);
   noTone(buzzerPin);
@@ -284,7 +300,7 @@ void bootupsequence() { // bootup sound n such (call bootupsequence() to use)
 }
 
 void setup() {
-  Serial.begin(9600); // initialize serial communication for debugging if connected to a computer 
+  Serial.begin(9600);
 
   // sets up pins
   pinMode(silenttogglePin, INPUT_PULLUP); 
@@ -293,20 +309,7 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
   pinMode(resetPin, INPUT_PULLUP);
   pinMode(armedPin, OUTPUT);
-  pinMode(silentIndicatorPin, OUTPUT); // silent mode indicator LED
-  
-  // Initialize camera and SD card
-  Serial.println("Initializing camera system...");
-  cameraAvailable = initializeCamera();
-  sdAvailable = initializeSD();
-  
-  if (cameraAvailable && sdAvailable) {
-    Serial.println("Camera security system ready!");
-  } else if (cameraAvailable && !sdAvailable) {
-    Serial.println("Camera detected but SD storage unavailable");
-  } else {
-    Serial.println("Camera features disabled - continuing with basic alarm");
-  }
+  pinMode(silentIndicatorPin, OUTPUT);
   
   // check initial silent mode state
   silentMode = (digitalRead(silenttogglePin) == LOW);
@@ -314,7 +317,7 @@ void setup() {
   // set initial silent mode indicator
   digitalWrite(silentIndicatorPin, silentMode ? HIGH : LOW);
   
-  // startupp!Q!!
+  // startupp!Q!! (now includes initialization)
   bootupsequence();
   
   Serial.println("Security Ready");
