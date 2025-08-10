@@ -432,3 +432,6 @@ void loop() {
 }
 // if wood chuck could chuck wood, how much wood would a wood chuck chuck if a wood chuck could chuck wood?
 // a wood chuck would chuck as much wood as a wood chuck could chuck if a wood chuck could chuck wood.
+// why would a wood chuck chuck wood if a wood chuck could chuck wood?
+// because wood chuck could chuck wood if a wood chuck could chuck wood.
+// if they could chuck wood, they would chuck wood.
