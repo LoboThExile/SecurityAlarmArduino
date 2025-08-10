@@ -2,7 +2,8 @@
 
 A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
 
-**Has camera support** (Experimental)
+## Has camera support (Experimental)
+This code **HAS camera support** however it is **untested** and **unstable**
 
 ### Made for PBL.
 
@@ -53,7 +54,7 @@ If you want to add camera support, consider these options:
 
 ## Notes
 
-- This code currently does **not** support camera integration. **Only in the Expermental branch**.  
+- This code **HAS camera support** however it is **untested** and **unstable**
 - Make sure to select a camera compatible with Arduino and your wiring capabilities.
 
 ---
