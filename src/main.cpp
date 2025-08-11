@@ -438,7 +438,7 @@ void loop() {
   Serial.println(lightValue);
 
   // get tripped noob
-  if (lightValue < 60 && !tripped) {
+  if (lightValue < 150 && !tripped) {
     tripped = true;
     photoTaken = false; // reset photo flag for new trip
     Serial.println("gocha");
