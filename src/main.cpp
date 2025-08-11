@@ -203,6 +203,7 @@ void bootupsequence() {
     digitalWrite(ledPin, LOW);
     digitalWrite(lightPin, HIGH);
     digitalWrite(armedPin, HIGH);
+    digitalWrite(silentIndicatorPin, HIGH);
     return;
   }
   
