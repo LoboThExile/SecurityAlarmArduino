@@ -18,7 +18,6 @@
 ---
 
 ## Buttons
-
 - **Silent Mode Toggle Button** → Arduino Pin **7** (use 10kΩ pull-down resistor)  
   *Toggles silent mode on or off.*
 - **Reset Button** → Arduino Pin **8** (use 10kΩ pull-down resistor)  
@@ -27,21 +26,18 @@
 ---
 
 ## Armed Indicator
-
 - **Green LED** → Arduino Pin **9** (with 220Ω resistor)  
   *Shows when the system is armed and ready.*
 
 ---
 
 ## Sensors
-
 - **Photoresistor** → Arduino Pin **A0** (use 10kΩ resistor as voltage divider)  
   *Detects changes in light (e.g., if a beam is broken), triggering the alarm.*
 
 ---
 
 ## Power
-
 - **5V** and **GND** rails on breadboard connected to Arduino **5V** and **GND**  
   *Distributes power to all components.*
 
