@@ -1,6 +1,5 @@
 #include <Arduino.h>
-
-// [ COMPONENTS ]
+// ^^ Required for PlatformIO
 // For Project Based Learning
 // Security alarm using light or lasers(lazers?).
 // Using a photoresistor or light sensor to detect if the light is blocked. (used photoresistor for this one)
@@ -21,33 +20,7 @@
 // Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
 
 // Optional: 
-// Lazer (x1) (if you want to use a laser instead of a LED.),
-// Camera (For recording the security footage if you want to.)
-
-// Camera Components (Optional):
-// Note: The camera is optional, However if you want to use it, it will take most of the pins on the board.
-
-// Adafruit TTL serial JPEG camera (4 Pins, TX, RX, VCC, GND) 
-// SD Card Module (CS, MOSI, MISO, SCK, VCC, GND)
-// MicroSD Card (formatted as FAT16 or FAT32) <-- Important for the SD card to work properly.
-
-// Photos saved to SD card in /PHOTOS/ folder as SEC1.JPG, SEC2.JPG, etc.
-// System will automatically detect if camera and SD card are available and disable features if not found.
-
-// Camera Connections:
-// Camera TX -> Arduino Pin 10 (RX via SoftwareSerial)
-// Camera RX -> Arduino Pin 11 (TX via SoftwareSerial)  
-// Camera VCC -> Arduino 5V
-// Camera GND -> Arduino GND
-//
-// SD Card Connections:
-// CS -> Arduino Pin 4
-// MOSI -> Arduino Pin 11 (shared with camera TX)
-// MISO -> Arduino Pin 12
-// SCK -> Arduino Pin 13
-// VCC -> Arduino 5V
-// GND -> Arduino GND
-
+// Lazer (x1) (if you want to use a laser instead of a LED.)
 
 // [ CODE ]
 const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)

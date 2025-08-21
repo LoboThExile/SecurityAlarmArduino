@@ -4,35 +4,8 @@
 
 ---
 
-## Camera Connections (Adafruit TTL Serial JPEG Camera)
-- **Camera TX** → Arduino Pin **10** (RX via SoftwareSerial)  
-  *Sends image data from the camera to the Arduino.*
-- **Camera RX** → Arduino Pin **11** (TX via SoftwareSerial)  
-  *Receives commands from the Arduino to the camera.*
-- **Camera VCC** → Arduino **5V**  
-  *Powers the camera module.*
-- **Camera GND** → Arduino **GND**  
-  *Ground connection for the camera.*
-
----
-
-## SD Card Module Connections
-- **CS**   → Arduino Pin **4**  
-  *Chip Select: tells the SD card when it is being accessed.*
-- **MOSI** → Arduino Pin **11** (shared with camera TX)  
-  *Master Out Slave In: sends data from Arduino to SD card.*
-- **MISO** → Arduino Pin **12**  
-  *Master In Slave Out: sends data from SD card to Arduino.*
-- **SCK**  → Arduino Pin **13**  
-  *Serial Clock: synchronizes data transfer.*
-- **VCC**  → Arduino **5V**  
-  *Powers the SD card module.*
-- **GND**  → Arduino **GND**  
-  *Ground connection for the SD card.*
-
----
-
 ## LEDs and Buzzer
+
 - **Silent Indicator LED (Yellow)** → Arduino Pin **2** (with 220Ω resistor)  
   *Shows if silent mode is active.*
 - **Red LED** → Arduino Pin **3** (with 220Ω resistor)  

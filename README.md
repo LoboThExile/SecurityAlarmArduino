@@ -2,9 +2,6 @@
 
 A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
 
-## Has camera support (Experimental)
-This code **HAS camera support** however it is **untested** and **unstable**
-
 ### [Wiring](WIRING.md)
 
 ### Made for PBL.
@@ -36,32 +33,10 @@ This code **HAS camera support** however it is **untested** and **unstable**
 
 ### Optional
 - Laser module (if you want to replace the white LED with a laser) <-- Later in this project, Will use laser.  
-- Camera module for recording footage **Only supported in Expermental branch** 
-
----
-
-## Camera Recommendations (Optional) **Only supported in Experimental branch**
-
-If you want to add camera support, consider these options: 
-
-- **Adafruit TTL Serial JPEG Camera**  **Supported in Expermental branch**
-  - Low resolution but uses fewer pins (4 pins: TX, RX, VCC, GND)  
-  - Recommended for simpler wiring  
-
-- **ArduCAM Mini 2MP**  **Unsupported for now.**
-  - Higher resolution and more features  
-  - Uses SPI interface and more pins (6-7 pins: SDA, SCL, VCC, GND, CS, MOSI, MISO)
-
----
 
 ## Notes
 
-- This code **HAS camera support** however it is **untested** and **unstable**
-- Make sure to select a camera compatible with Arduino and your wiring capabilities.
-
 ---
 
-
 ## License
-
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
