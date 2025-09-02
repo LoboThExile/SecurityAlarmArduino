@@ -1,6 +1,11 @@
 #include <Arduino.h>
 // ^^ Required for PlatformIO
 
+#include <Adafruit_PN532.h>
+// ^^ Required for NFC
+#include <Wire.h>
+// ^^ Depenency for NFCs
+
 // 3 Cerdik
 // For Project Based Learning
 // Security alarm using light or lasers(lazers?).
