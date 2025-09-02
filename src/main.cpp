@@ -95,9 +95,6 @@ void saveDeviceData() {
 
 void loadDeviceData() {
   EEPROM.get(EEPROM_ADDR, device);
-  if (device.deviceID == 0xFFFFFFFF || device.deviceID == 0) {
-    device.registered = false;
-  }
 }
 
 uint32_t generateRandomID() {
@@ -282,7 +279,7 @@ void setup() {
   // Always load device data
   loadDeviceData();
 
-  if (!device.registered) {
+  if (!device.registered || device.deviceID == 0) {
     Serial.println("No device data found. Generating new one...");
     device.deviceID = generateRandomID();
     device.password = makePasswordFromID(device.deviceID);
