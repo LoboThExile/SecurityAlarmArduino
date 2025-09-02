@@ -1,49 +1,41 @@
-# Security System Wiring Guide
+# Security System Wiring
 
-## Microcontroller: Arduino Uno
+## Prerequisites
 
----
+- Arduino Uno (or compatible)
+- PN532 NFC Reader (configured for **I²C mode**)
+- Breadboard + jumper wires
+- Resistors: 220Ω (for LEDs), 10kΩ (for buttons, photoresistor divider)
 
-## LEDs and Buzzer
+## Wiring
 
-- **Silent Indicator LED (Yellow)** → Arduino Pin **2** (with 220Ω resistor)  
-  *Shows if silent mode is active.*
-- **Red LED** → Arduino Pin **3** (with 220Ω resistor)  
-  *Indicates alarm/tripped state.*
-- **White LED / Laser** → Arduino Pin **6** (with 220Ω resistor)  
-  *Used as a light source for the photoresistor or as a laser tripwire.*
-- **Buzzer** → Arduino Pin **5**  
-  *Sounds an alarm when the system is tripped.*
+| Component                   | Arduino Pin | Notes / Function                                   |
+|-----------------------------|-------------|---------------------------------------------------|
+ | Silent Indicator LED (Yellow) | 2           | Shows "silent mode" active, 220Ω resistor         |
+| Red LED                     | 3           | Alarm triggered indicator, 220Ω resistor          |
+| Buzzer                      | 5           | Audible alarm, can pulse/beep                     |
+| White LED / Laser           | 6           | Extra alert / deterrent light, 220Ω resistor      |
+| Green LED (Armed Status)    | 9           | Shows system armed, 220Ω resistor                 |
+ | Silent Mode Button          | 7           | Toggles silent alarm, 10kΩ pull-down resistor     |
+| Reset Button                | 8           | Resets alarm state, 10kΩ pull-down resistor       |
+| Power Off Button            | A1          | Turns system off, 10kΩ pull-down resistor         |
+ | Photoresistor (LDR)        | A0          | Light detection, wired as voltage divider (10kΩ)  |
+| SDA                         | A4          | Data line, requires PN532 set to I²C mode         |
+| SCL                         | A5          | Clock line, requires PN532 set to I²C mode        |
+| VCC                         | 5V          | Powers PN532 module                               |
+| GND                         | GND         | Ground                                            |
+| RSTO / RSTPDN               | —           | Leave unconnected unless reset is required        |
+| IRQ                         | —           | Not needed in I²C mode                            |
+ | Breadboard Rail (+)        | 5V          | Common supply rail                                |
+| Breadboard Rail (–)         | GND         | Common ground rail                                |
 
----
+## Notes
 
-## Buttons
-- **Silent Mode Toggle Button** → Arduino Pin **7** (use 10kΩ pull-down resistor)  
-  *Toggles silent mode on or off.*
-- **Reset Button** → Arduino Pin **8** (use 10kΩ pull-down resistor)  
-  *Resets the alarm after it is tripped.*
+- **Resistors**  
+  - LEDs: 220Ω series resistor each  
+  - Buttons: 10kΩ pull-down resistors  
+  - LDR: 10kΩ for voltage divider  
 
----
-
-## Armed Indicator
-- **Green LED** → Arduino Pin **9** (with 220Ω resistor)  
-  *Shows when the system is armed and ready.*
-
----
-
-## Sensors
-- **Photoresistor** → Arduino Pin **A0** (use 10kΩ resistor as voltage divider)  
-  *Detects changes in light (e.g., if a beam is broken), triggering the alarm.*
-
----
-
-## Power
-- **5V** and **GND** rails on breadboard connected to Arduino **5V** and **GND**  
-  *Distributes power to all components.*
-
----
-
-> **Note:**  
-> - Use appropriate resistors for all LEDs (typically 220Ω).
-> - Use pull-down resistors (10kΩ) for buttons to ensure stable readings.
-> - Double-check all connections before powering up.
+- **PN532**  
+  - Must be switched/jumpered to **I²C mode**  
+  > Only **SDA (A4)** and **SCL (A5)** are needed for communication  
