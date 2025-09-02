@@ -41,6 +41,9 @@ const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
 const int resetPin = 8; // reset button (reset system when tripped) 
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
+
+const int triggerthreshold = 150; // threshold for light sensor to trigger alarm
+// lower value = more sensitive (darker environment needed to trigger alarm)
  
 const int powerOffPin = A1; // power off button (acts like first boot)
 const int lightSensorPin = A0; // PhotoResistor connected to A0
@@ -57,6 +60,7 @@ bool blinkState = false; // LED blink state
 bool tripped = false; // system tripped state
 bool systemOn = true; // system power state
 bool firstBoot = true; // flag for first boot initialization
+bool pn532Available = false; // flag to check if PN532 is available
 
 // debouncer reset button variables n such
 bool lastResetState = HIGH;
@@ -70,7 +74,7 @@ bool powerOffButtonState = HIGH;
 bool silentMode = false; // silent mode state
 bool resetState = HIGH; // current state of reset button
 
-Adafruit_PN532 nfc;
+Adafruit_PN532 nfc(10, 11); // Example: SDA=10, SCL=11.
 
 // Data struct to save
 struct DeviceData {
@@ -259,22 +263,23 @@ void powerOnSequence() {
   Serial.println(silentMode ? "ON" : "OFF");
 }
 
-// [ INIT ]
-
 void setup() {
   Serial.begin(9600);
   while (!Serial) delay(10);
   Serial.println("Security System Initializing...");
 
+  // Try to initialize PN532
   nfc.begin();
-
   uint32_t versiondata = nfc.getFirmwareVersion();
   if (!versiondata) {
-    Serial.println("Didn't find PN53x board");
+    Serial.println("Didn't find PN53x board. Skipping NFC setup...");
+    pn532Available = false;
+  } else {
+    pn532Available = true;
+    nfc.SAMConfig();
   }
 
-    // Configure the board to read RFID tags
-  nfc.SAMConfig();
+  // Always load device data
   loadDeviceData();
 
   if (!device.registered) {
@@ -287,7 +292,11 @@ void setup() {
     Serial.print("Generated ID: "); Serial.println(device.deviceID);
     Serial.print("Generated Password: "); Serial.println(device.password);
 
-    waitForCardAndRegister();
+    if (pn532Available) {
+      waitForCardAndRegister();
+    } else {
+      Serial.println("Skipping card registration (PN532 not available).");
+    }
   } else {
     Serial.println("Loaded device data:");
     Serial.print("Device ID: "); Serial.println(device.deviceID);
@@ -300,7 +309,6 @@ void setup() {
     }
     Serial.println();
   }
-
 
   pinMode(silenttogglePin, INPUT_PULLUP); 
   pinMode(ledPin, OUTPUT);
@@ -344,9 +352,10 @@ void loop() {
   int lightValue = analogRead(lightSensorPin);
   Serial.println(lightValue);
 
-  if (lightValue < 150 && !tripped) {
+  if (lightValue < triggerthreshold && !tripped) {
     tripped = true;
     Serial.println("gocha");
+    
     previousMillis = currentMillis;
   }
 
@@ -415,6 +424,7 @@ void loop() {
   }
   lastSilentState = silentReading;
   
+  if (pn532Available)
   if (checkCard()) {
     if (systemOn) {
       powerOffSequence();
