@@ -34,8 +34,6 @@
 
 // [ CODE ]
 
-
-
 const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)
 const int ledPin = 3; // red led.                                                     (red)
 const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
@@ -43,9 +41,6 @@ const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
 const int resetPin = 8; // reset button (reset system when tripped) 
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
-
-#define PN532_IRQ (10)
-#define PN532_RESET (-1) // Not using reset pin so setting it to -1 disables it. Set to 11 if needed.
  
 const int powerOffPin = A1; // power off button (acts like first boot)
 const int lightSensorPin = A0; // PhotoResistor connected to A0
@@ -75,7 +70,7 @@ bool powerOffButtonState = HIGH;
 bool silentMode = false; // silent mode state
 bool resetState = HIGH; // current state of reset button
 
-Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
+Adafruit_PN532 nfc;
 
 // Data struct to save
 struct DeviceData {
