@@ -6,6 +6,9 @@
 #include <Wire.h>
 // ^^ Depenency for NFCs
 
+#include <EEPROM.h>
+// ^^ For saving values.
+
 // 3 Cerdik
 // For Project Based Learning
 // Security alarm using light or lasers(lazers?).
@@ -30,6 +33,9 @@
 // Lazer (x1) (if you want to use a laser instead of a LED.)
 
 // [ CODE ]
+
+
+
 const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)
 const int ledPin = 3; // red led.                                                     (red)
 const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
@@ -37,6 +43,10 @@ const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
 const int resetPin = 8; // reset button (reset system when tripped) 
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
+
+#define PN532_IRQ (10)
+#define PN532_RESET (-1) // Not using reset pin so setting it to -1 disables it. Set to 11 if needed.
+ 
 const int powerOffPin = A1; // power off button (acts like first boot)
 const int lightSensorPin = A0; // PhotoResistor connected to A0
 
@@ -64,6 +74,103 @@ bool powerOffButtonState = HIGH;
 
 bool silentMode = false; // silent mode state
 bool resetState = HIGH; // current state of reset button
+
+Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
+
+// Data struct to save
+struct DeviceData {
+  uint32_t deviceID;
+  uint32_t password;
+  byte cardUID[7];
+  byte uidLength;
+  bool registered;
+};
+
+// EEPROM location
+const int EEPROM_ADDR = 0;
+DeviceData device;
+
+void saveDeviceData() {
+  EEPROM.put(EEPROM_ADDR, device);
+}
+
+void loadDeviceData() {
+  EEPROM.get(EEPROM_ADDR, device);
+  if (device.deviceID == 0xFFFFFFFF || device.deviceID == 0) {
+    device.registered = false;
+  }
+}
+
+uint32_t generateRandomID() {
+  return (uint32_t)random(100000, 999999); // basic 6-digit ID
+}
+
+uint32_t makePasswordFromID(uint32_t id) {
+  return id ^ 0xABCDEF; // simple transformation
+}
+
+void waitForCardAndRegister() {
+  Serial.println("Please tap an NFC card...");
+
+  boolean success;
+  uint8_t uid[7];
+  uint8_t uidLength;
+
+  while (true) {
+    success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+    if (success) {
+      device.uidLength = uidLength;
+      for (byte i = 0; i < uidLength; i++) {
+        device.cardUID[i] = uid[i];
+      }
+      device.registered = true;
+      saveDeviceData();
+
+      Serial.print("Card registered! UID: ");
+      for (byte i = 0; i < uidLength; i++) {
+        Serial.print(uid[i], HEX);
+        Serial.print(" ");
+      }
+      Serial.println();
+      break;
+    }
+  }
+}
+
+bool checkCard() {
+  uint8_t uid[7];
+  uint8_t uidLength;
+
+  // Look for a card
+  if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength)) {
+    Serial.print("Card detected: ");
+    for (uint8_t i = 0; i < uidLength; i++) {
+      Serial.print(uid[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    // Compare length first
+    if (uidLength != device.uidLength) {
+      Serial.println("Card length mismatch");
+      return false;
+    }
+
+    // Compare each byte of UID
+    for (uint8_t i = 0; i < uidLength; i++) {
+      if (uid[i] != device.cardUID[i]) {
+        Serial.println("Card UID mismatch");
+        return false;
+      }
+    }
+
+    Serial.println("Card matched");
+    return true;
+  }
+
+  return false; // No card detected
+}
+
 
 void bootupsequence() {
   if (silentMode) {
@@ -157,9 +264,48 @@ void powerOnSequence() {
   Serial.println(silentMode ? "ON" : "OFF");
 }
 
+// [ INIT ]
+
 void setup() {
   Serial.begin(9600);
+  while (!Serial) delay(10);
   Serial.println("Security System Initializing...");
+
+  nfc.begin();
+
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (!versiondata) {
+    Serial.println("Didn't find PN53x board");
+  }
+
+    // Configure the board to read RFID tags
+  nfc.SAMConfig();
+  loadDeviceData();
+
+  if (!device.registered) {
+    Serial.println("No device data found. Generating new one...");
+    device.deviceID = generateRandomID();
+    device.password = makePasswordFromID(device.deviceID);
+    device.registered = false;
+    saveDeviceData();
+
+    Serial.print("Generated ID: "); Serial.println(device.deviceID);
+    Serial.print("Generated Password: "); Serial.println(device.password);
+
+    waitForCardAndRegister();
+  } else {
+    Serial.println("Loaded device data:");
+    Serial.print("Device ID: "); Serial.println(device.deviceID);
+    Serial.print("Password : "); Serial.println(device.password);
+
+    Serial.print("Card UID : ");
+    for (int i = 0; i < device.uidLength; i++) {
+      Serial.print(device.cardUID[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+
 
   pinMode(silenttogglePin, INPUT_PULLUP); 
   pinMode(ledPin, OUTPUT);
@@ -172,6 +318,8 @@ void setup() {
 
   powerOnSequence();
 }
+
+// [ LOOP ]
 
 void loop() {
   unsigned long currentMillis = millis();
@@ -271,11 +419,16 @@ void loop() {
     silentButtonState = silentReading;
   }
   lastSilentState = silentReading;
+  
+  if (checkCard()) {
+    if (systemOn) {
+      powerOffSequence();
+    } else {
+      powerOnSequence();
+    }
+    delay(1000);
+  }
 
   delay(50);
 }
-// if wood chuck could chuck wood, how much wood would a wood chuck chuck if a wood chuck could chuck wood?
-// a wood chuck would chuck as much wood as a wood chuck could chuck if a wood chuck could chuck wood.
-// why would a wood chuck chuck wood if a wood chuck could chuck wood?
-// because wood chuck could chuck wood if a wood chuck could chuck wood.
-// if they could chuck wood, they would chuck wood.
+// .. im dying. 
