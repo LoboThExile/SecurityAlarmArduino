@@ -20,7 +20,7 @@
 // Arduino Nano, Arduino Uno, ESP32 (Good for future-proofing.), or any other microcontroller that supports C++. Using Arduino Uno for this case.
 // Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
 
-// Resistors: 
+// Resistors:
 // (NOTE: Pack extra resistors just in case. Or bring the whole set at this point.)
 // 220 ohm resistors (x4), 10K ohm resistor (x1)(Still bring extra for both.)
 
@@ -29,7 +29,7 @@
 // Photoresistor (x1), Button (x3), Buzzer (x1)  // Updated: now 3 buttons (reset, silent, power off)
 // Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
 
-// Optional: 
+// Optional:
 // Lazer (x1) (if you want to use a laser instead of a LED.)
 
 // [ CODE ]
@@ -39,12 +39,12 @@ const int ledPin = 3; // red led.                                               
 const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
 const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
-const int resetPin = 8; // reset button (reset system when tripped) 
+const int resetPin = 8; // reset button (reset system when tripped)
 const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
 
 const int triggerthreshold = 150; // threshold for light sensor to trigger alarm
 // lower value = more sensitive (darker environment needed to trigger alarm)
- 
+
 const int powerOffPin = A1; // power off button (acts like first boot)
 const int lightSensorPin = A0; // PhotoResistor connected to A0
 
@@ -106,7 +106,7 @@ uint32_t makePasswordFromID(uint32_t id) {
 }
 
 void waitForCardAndRegister() {
-  Serial.println("Please tap an NFC card...");
+  Serial.println("Please tap an NFC card to register it...");
 
   boolean success;
   uint8_t uid[7];
@@ -191,7 +191,7 @@ void bootupsequence() {
   }
 
   tone(buzzerPin, 1000);
-  digitalWrite(armedPin, HIGH); 
+  digitalWrite(armedPin, HIGH);
   digitalWrite(lightPin, LOW);
   delay(50);
   noTone(buzzerPin);
@@ -276,38 +276,44 @@ void setup() {
     nfc.SAMConfig();
   }
 
-  // Always load device data
-  loadDeviceData();
 
-  if (!device.registered || device.deviceID == 0) {
-    Serial.println("No device data found. Generating new one...");
+  // Load and validate device data from EEPROM
+  loadDeviceData();
+  bool isDataValid = (device.deviceID != 0) && (device.password == makePasswordFromID(device.deviceID));
+
+  if (!isDataValid) {
+    Serial.println("Invalid or no device data found. Generating new data...");
     device.deviceID = generateRandomID();
     device.password = makePasswordFromID(device.deviceID);
-    device.registered = false;
-    saveDeviceData();
+    device.registered = false; // Ensure registration status is reset
+    memset(device.cardUID, 0, sizeof(device.cardUID)); // Clear any old UID data
+    device.uidLength = 0;
+    saveDeviceData(); // Save the new, valid data
 
     Serial.print("Generated ID: "); Serial.println(device.deviceID);
     Serial.print("Generated Password: "); Serial.println(device.password);
-
-    if (pn532Available) {
-      waitForCardAndRegister();
-    } else {
-      Serial.println("Skipping card registration (PN532 not available).");
-    }
   } else {
-    Serial.println("Loaded device data:");
+    Serial.println("Loaded valid device data:");
     Serial.print("Device ID: "); Serial.println(device.deviceID);
     Serial.print("Password : "); Serial.println(device.password);
+  }
 
-    Serial.print("Card UID : ");
+  // After validating/generating data, handle card registration if needed
+  if (pn532Available && !device.registered) {
+    Serial.println("Device is not registered to an NFC card.");
+    waitForCardAndRegister();
+  } else if (device.registered) {
+    Serial.print("Registered Card UID: ");
     for (int i = 0; i < device.uidLength; i++) {
       Serial.print(device.cardUID[i], HEX);
       Serial.print(" ");
     }
     Serial.println();
+  } else {
+    Serial.println("No card registered (PN532 not available).");
   }
 
-  pinMode(silenttogglePin, INPUT_PULLUP); 
+  pinMode(silenttogglePin, INPUT_PULLUP);
   pinMode(ledPin, OUTPUT);
   pinMode(lightPin, OUTPUT);
   pinMode(buzzerPin, OUTPUT);
@@ -421,16 +427,16 @@ void loop() {
   }
   lastSilentState = silentReading;
   
-  if (pn532Available)
-  if (checkCard()) {
-    if (systemOn) {
-      powerOffSequence();
-    } else {
-      powerOnSequence();
+  if (pn532Available) {
+    if (checkCard()) {
+      if (systemOn) {
+        powerOffSequence();
+      } else {
+        powerOnSequence();
+      }
+      delay(1000);
     }
-    delay(1000);
   }
-
   delay(50);
 }
-// .. im dying. 
+// .. im dying.
