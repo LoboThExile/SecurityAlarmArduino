@@ -1,64 +1,92 @@
 #include <Arduino.h>
-// ^^ Required for PlatformIO
+#include <Wire.h>
+#include <Adafruit_PN532.h>
 
-// 3 Cerdik
-// For Project Based Learning
-// Security alarm using light or lasers(lazers?).
-// Using a photoresistor or light sensor to detect if the light is blocked. (used photoresistor for this one)
+// ---------- NFC SETUP ----------
+#define PN532_IRQ   2
+#define PN532_RESET 3
+Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
-// [ COMPONENTS ]
+// Your known authorized UID (update with your card’s UID)
+// List of authorized UIDs (add more if needed)
+uint8_t authorizedUIDs[][4] = {
+  {0xE4, 0x98, 0xB0, 0x05},  // Card 1
+  {0xFE, 0xBB, 0xBC, 0x02}   // Card 2 (  )
+};
 
-// Microcontroller:
-// Arduino Nano, Arduino Uno, ESP32 (Good for future-proofing.), or any other microcontroller that supports C++. Using Arduino Uno for this case.
-// Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
+const uint8_t numAuthorizedCards = sizeof(authorizedUIDs) / sizeof(authorizedUIDs[0]);
+const uint8_t authorizedLength = 4;  // Each card has 4-byte UID
 
-// Resistors: 
-// (NOTE: Pack extra resistors just in case. Or bring the whole set at this point.)
-// 220 ohm resistors (x4), 10K ohm resistor (x1)(Still bring extra for both.)
+bool nfcAuthorized = false;
+unsigned long nfcAuthTimeout = 0;
+const unsigned long authDuration = 10000; // 10 seconds of authorization
 
-// Other components:
-// Breadboard (Duhh..) <---------------- VERYY IMPORTANTT!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Photoresistor (x1), Button (x3), Buzzer (x1)  // Updated: now 3 buttons (reset, silent, power off)
-// Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
+// ---------- PIN SETUP ----------
+const int silentIndicatorPin = 4;
+const int ledPin = 5;
+const int lightPin = 6;
+const int buzzerPin = 7;
+const int silenttogglePin = 8;
+const int resetPin = 9;
+const int armedPin = 10;
+const int powerOffPin = A1;
+const int lightSensorPin = A0;
 
-// Optional: 
-// Lazer (x1) (if you want to use a laser instead of a LED.)
+const unsigned long blinkInterval = 150;
+const unsigned long debounceDelay = 50;
 
-// [ CODE ]
-const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)
-const int ledPin = 3; // red led.                                                     (red)
-const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
-const int buzzerPin = 5; // buzzer
-const int silenttogglePin = 7; // button for toggling silent mode
-const int resetPin = 8; // reset button (reset system when tripped) 
-const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
-const int powerOffPin = A1; // power off button (acts like first boot)
-const int lightSensorPin = A0; // PhotoResistor connected to A0
+unsigned long previousMillis = 0;
+unsigned long lastResetDebounceTime = 0;
+unsigned long lastSilentDebounceTime = 0;
+unsigned long lastPowerOffDebounceTime = 0;
 
-const unsigned long blinkInterval = 150; // interval for blinking LED when tripped
-const unsigned long debounceDelay = 50; // debounce time in ms
+bool blinkState = false;
+bool tripped = false;
+bool systemOn = true;
+bool firstBoot = true;
 
-unsigned long previousMillis = 0; // for blink timing
-unsigned long lastResetDebounceTime = 0; // for reset button debouncing
-unsigned long lastSilentDebounceTime = 0; // for silent toggle button debouncing
-unsigned long lastPowerOffDebounceTime = 0; // for power off button debouncing
-
-bool blinkState = false; // LED blink state
-bool tripped = false; // system tripped state
-bool systemOn = true; // system power state
-bool firstBoot = true; // flag for first boot initialization
-
-// debouncer reset button variables n such
 bool lastResetState = HIGH;
 bool lastSilentState = HIGH;
 bool silentButtonState = HIGH;
 
-// debouncer power off button variables
 bool lastPowerOffState = HIGH;
 bool powerOffButtonState = HIGH;
 
-bool silentMode = false; // silent mode state
-bool resetState = HIGH; // current state of reset button
+bool silentMode = false;
+bool resetState = HIGH;
+
+// ---------- FUNCTIONS ----------
+
+bool checkNFC() {
+  uint8_t uid[7];
+  uint8_t uidLength;
+
+  if (!nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength)) return false;
+
+  if (uidLength != authorizedLength) return false;
+
+  // Compare against each authorized card
+  for (uint8_t card = 0; card < numAuthorizedCards; card++) {
+    bool match = true;
+    for (uint8_t i = 0; i < authorizedLength; i++) {
+      if (uid[i] != authorizedUIDs[card][i]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) return true;  // Found a match!
+  }
+
+  // If we got here, card was not recognized
+  Serial.print("Unknown card UID: ");
+  for (uint8_t i = 0; i < uidLength; i++) {
+    Serial.print("0x"); Serial.print(uid[i], HEX);
+    if (i < uidLength - 1) Serial.print(", ");
+  }
+  Serial.println();
+  return false;
+}
+
 
 void bootupsequence() {
   if (silentMode) {
@@ -66,11 +94,7 @@ void bootupsequence() {
     digitalWrite(lightPin, LOW);
     delay(500);
     digitalWrite(silentIndicatorPin, HIGH);
-
-    if (firstBoot) {
-      firstBoot = false;
-    }
-
+    firstBoot = false;
     delay(1250);
     digitalWrite(silentIndicatorPin, LOW);
     digitalWrite(armedPin, LOW);
@@ -89,11 +113,7 @@ void bootupsequence() {
   noTone(buzzerPin);
   delay(500);
   digitalWrite(silentIndicatorPin, HIGH);
-
-  if (firstBoot) {
-    firstBoot = false;
-  }
-
+  firstBoot = false;
   delay(1250);
   digitalWrite(silentIndicatorPin, LOW);
 
@@ -112,6 +132,8 @@ void bootupsequence() {
 }
 
 void powerOffSequence() {
+  if (!nfcAuthorized) return; // 🔒 Block if not authorized
+
   Serial.println("Powering off system...");
   digitalWrite(lightPin, LOW);
   digitalWrite(armedPin, LOW);
@@ -133,11 +155,12 @@ void powerOffSequence() {
   firstBoot = true;
 
   digitalWrite(ledPin, HIGH);
-
-  Serial.println("System powered off. Press power button to restart.");
+  Serial.println("System powered off. Scan NFC to restart.");
 }
 
 void powerOnSequence() {
+  if (!nfcAuthorized) return; // 🔒 Block if not authorized
+
   Serial.println("Powering on system...");
   systemOn = true;
 
@@ -165,40 +188,60 @@ void setup() {
   pinMode(silentIndicatorPin, OUTPUT);
   pinMode(powerOffPin, INPUT_PULLUP);
 
-  powerOnSequence();
+  // NFC init
+  nfc.begin();
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (!versiondata) {
+    Serial.println("Didn't find PN532!");
+    while (1);
+  }
+  nfc.SAMConfig();
+  Serial.println("Waiting for NFC card...");
 }
 
 void loop() {
   unsigned long currentMillis = millis();
-  int powerOffReading = digitalRead(powerOffPin);
 
-  if (powerOffReading != lastPowerOffState) {
-    lastPowerOffDebounceTime = currentMillis;
+  // ---------- NFC AUTH ----------
+  if (checkNFC()) {
+    nfcAuthorized = true;
+    nfcAuthTimeout = currentMillis + authDuration;
+    Serial.println("NFC Authorized! System unlocked.");
   }
 
-  if ((currentMillis - lastPowerOffDebounceTime) > debounceDelay) {
-    if (powerOffReading == LOW && powerOffButtonState == HIGH) {
-      if (systemOn) {
-        powerOffSequence();
-      } else {
-        powerOnSequence();
-      }
-    }
-    powerOffButtonState = powerOffReading;
+  if (nfcAuthorized && currentMillis > nfcAuthTimeout) {
+    nfcAuthorized = false;
+    Serial.println("Authorization expired. System locked.");
   }
-  lastPowerOffState = powerOffReading;
 
   if (!systemOn) {
     delay(100);
     return;
   }
 
-  int lightValue = analogRead(lightSensorPin);
-  Serial.println(lightValue);
+  // ---------- IF NOT AUTHORIZED, BLOCK INPUTS ----------
+  if (!nfcAuthorized) {
+    digitalWrite(ledPin, LOW);
+    digitalWrite(armedPin, LOW);
+    noTone(buzzerPin);
+    return; // Skip actions until NFC scanned
+  }
 
+  // ---------- NORMAL LOGIC ----------
+  int powerOffReading = digitalRead(powerOffPin);
+  if (powerOffReading != lastPowerOffState) lastPowerOffDebounceTime = currentMillis;
+  if ((currentMillis - lastPowerOffDebounceTime) > debounceDelay) {
+    if (powerOffReading == LOW && powerOffButtonState == HIGH) {
+      if (systemOn) powerOffSequence();
+      else powerOnSequence();
+    }
+    powerOffButtonState = powerOffReading;
+  }
+  lastPowerOffState = powerOffReading;
+
+  int lightValue = analogRead(lightSensorPin);
   if (lightValue < 150 && !tripped) {
     tripped = true;
-    Serial.println("gocha");
     previousMillis = currentMillis;
   }
 
@@ -207,15 +250,11 @@ void loop() {
       previousMillis = currentMillis;
       blinkState = !blinkState;
       digitalWrite(ledPin, blinkState ? HIGH : LOW);
-      Serial.println("im tweakin out");
       digitalWrite(lightPin, LOW);
       digitalWrite(armedPin, LOW);
 
-      if (blinkState && !silentMode) {
-        tone(buzzerPin, 500);
-      } else {
-        noTone(buzzerPin);
-      }
+      if (blinkState && !silentMode) tone(buzzerPin, 500);
+      else noTone(buzzerPin);
     }
     delay(150);
   } else {
@@ -225,11 +264,7 @@ void loop() {
   }
 
   int resetReading = digitalRead(resetPin);
-
-  if (resetReading != lastResetState) {
-    lastResetDebounceTime = currentMillis;
-  }
-
+  if (resetReading != lastResetState) lastResetDebounceTime = currentMillis;
   if ((currentMillis - lastResetDebounceTime) > debounceDelay) {
     if (resetReading == LOW && resetState == HIGH && tripped) {
       tripped = false;
@@ -240,28 +275,18 @@ void loop() {
       delay(250);
       digitalWrite(armedPin, HIGH);
       bootupsequence();
-      Serial.println("Resetting Complete.");
     }
     resetState = resetReading;
   }
   lastResetState = resetReading;
 
   int silentReading = digitalRead(silenttogglePin);
-
-  if (silentReading != lastSilentState) {
-    lastSilentDebounceTime = currentMillis;
-  }
-
+  if (silentReading != lastSilentState) lastSilentDebounceTime = currentMillis;
   if ((currentMillis - lastSilentDebounceTime) > debounceDelay) {
     if (silentReading == LOW && silentButtonState == HIGH) {
       silentMode = !silentMode;
       digitalWrite(silentIndicatorPin, silentMode ? HIGH : LOW);
-      Serial.print("Silent Mode: ");
-      Serial.println(silentMode ? "ON" : "OFF");
-
-      if (tripped && silentMode) {
-        noTone(buzzerPin);
-      }
+      if (tripped && silentMode) noTone(buzzerPin);
     }
     silentButtonState = silentReading;
   }
@@ -269,8 +294,3 @@ void loop() {
 
   delay(50);
 }
-// if wood chuck could chuck wood, how much wood would a wood chuck chuck if a wood chuck could chuck wood?
-// a wood chuck would chuck as much wood as a wood chuck could chuck if a wood chuck could chuck wood.
-// why would a wood chuck chuck wood if a wood chuck could chuck wood?
-// because wood chuck could chuck wood if a wood chuck could chuck wood.
-// if they could chuck wood, they would chuck wood.
