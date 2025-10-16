@@ -3,14 +3,15 @@
 
 #include <IRremote.h>
 
-// 3 Cerdik
+
+
 // For Project Based Learning
 // Security alarm using light or lasers(lazers?).
 // Using a photoresistor or light sensor to detect if the light is blocked. (used photoresistor for this one)
 
 // [ COMPONENTS ]
 
-// Microcontroller:
+// Microcontroller:3
 // Arduino Nano, Arduino Uno, ESP32 (Good for future-proofing.), or any other microcontroller that supports C++. Using Arduino Uno for this case.
 // Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
 
@@ -28,7 +29,8 @@
 
 // [ CODE ]
 const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)
-const int ledPin = 3; // red led.                                                     (red)
+const int ledPin = 3; // red led.                                                    (red)
+const int statusled = 4; // Status led.
 const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
 const int buzzerPin = 5; // buzzer
 const int silenttogglePin = 7; // button for toggling silent mode
@@ -37,6 +39,8 @@ const int armedPin = 9; // armed indicator LED (green when armed, off when tripp
 const int powerOffPin = A1; // power off button (acts like first boot)
 const int lightSensorPin = A0; // PhotoResistor connected to A0
 const int irReceiverPin = 11; // IR receiver connected to digital pin 4
+
+const int TRIGTRESHOLD = 600; // threshold for light sensor to trigger alarm
 
 const unsigned long blinkInterval = 150; // interval for blinking LED when tripped
 const unsigned long debounceDelay = 50; // debounce time in ms
@@ -62,7 +66,6 @@ bool powerOffButtonState = HIGH;
 
 bool silentMode = false; // silent mode state
 bool resetState = HIGH; // current state of reset button
-
 IRrecv irrecv(irReceiverPin);
 decode_results results;
 
@@ -85,6 +88,7 @@ void bootupsequence() {
     digitalWrite(ledPin, LOW);
     digitalWrite(lightPin, HIGH);
     digitalWrite(armedPin, HIGH);
+    digitalWrite(statusled, LOW);
     return;
   }
 
@@ -115,6 +119,7 @@ void bootupsequence() {
   digitalWrite(ledPin, LOW);
   digitalWrite(lightPin, HIGH);
   digitalWrite(armedPin, HIGH);
+  digitalWrite(statusled, LOW);
 }
 
 void powerOffSequence() {
@@ -122,12 +127,12 @@ void powerOffSequence() {
   digitalWrite(lightPin, LOW);
   digitalWrite(armedPin, LOW);
   digitalWrite(silentIndicatorPin, LOW);
+  digitalWrite(statusled, HIGH);
   noTone(buzzerPin);
-
   if (!silentMode) {
-    tone(buzzerPin, 1500, 100);
+    tone(buzzerPin, 3000, 100);
     delay(150);
-    tone(buzzerPin, 1000, 100);
+    tone(buzzerPin, 2000, 100);
     delay(150);
     tone(buzzerPin, 500, 200);
     delay(250);
@@ -138,7 +143,8 @@ void powerOffSequence() {
   systemOn = false;
   firstBoot = true;
 
-  digitalWrite(ledPin, HIGH);
+  //digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin, LOW);
 
   Serial.println("System powered off. Press power button to restart.");
 }
@@ -152,7 +158,6 @@ void powerOnSequence() {
   digitalWrite(ledPin, LOW);
 
   bootupsequence();
-
   Serial.println("Security Ready");
   Serial.print("Silent Mode: ");
   Serial.println(silentMode ? "ON" : "OFF");
@@ -221,7 +226,7 @@ void loop() {
   int lightValue = analogRead(lightSensorPin);
   Serial.println(lightValue);
 
-  if (lightValue < 150 && !tripped) {
+  if (lightValue < TRIGTRESHOLD && !tripped) {
     tripped = true;
     Serial.println("gocha");
     previousMillis = currentMillis;
