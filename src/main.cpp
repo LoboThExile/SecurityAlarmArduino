@@ -3,15 +3,12 @@
 
 #include <IRremote.h>
 
-
-
-// For Project Based Learning
-// Security alarm using light or lasers(lazers?).
-// Using a photoresistor or light sensor to detect if the light is blocked. (used photoresistor for this one)
+// Security alarm using light or lasers.
+// Using a photoresistor (LDR) to detect if the light is blocked.
 
 // [ COMPONENTS ]
 
-// Microcontroller:3
+// Microcontroller:
 // Arduino Nano, Arduino Uno, ESP32 (Good for future-proofing.), or any other microcontroller that supports C++. Using Arduino Uno for this case.
 // Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
 
@@ -20,7 +17,7 @@
 // 220 ohm resistors (x4), 10K ohm resistor (x1)(Still bring extra for both.)
 
 // Other components:
-// Breadboard (Duhh..) <---------------- VERYY IMPORTANTT!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Breadboard (x1)
 // Photoresistor (x1), Button (x3), Buzzer (x1)  // Updated: now 3 buttons (reset, silent, power off)
 // Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
 
