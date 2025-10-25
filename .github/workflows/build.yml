@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install PlatformIO
         uses: actions/setup-python@v4
@@ -22,7 +22,7 @@ jobs:
         run: platformio run
 
       - name: Upload compiled firmware artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: firmware-binaries
           path: "**/.pio/build/*/firmware.*"
@@ -33,11 +33,12 @@ jobs:
 
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: firmware-binaries
+          path: ./firmware
 
       - name: Create Release and Attach Files
         uses: softprops/action-gh-release@v1
         with:
-          files: "**/firmware.*"
+          files: "./firmware/firmware.*"
