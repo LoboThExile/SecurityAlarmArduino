@@ -6,8 +6,6 @@ A Security Alarm system using an Arduino with lasers or an LED shining light ont
 
 ### Made for PBL.
 
----
-
 ## Components
 
 ### Microcontroller
