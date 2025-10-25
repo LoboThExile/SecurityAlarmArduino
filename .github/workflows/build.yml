@@ -3,8 +3,11 @@ name: Build and Release Firmware
 on:
   push:
     tags:
-      - "v*.*.*"   # Runs when you push a version tag like v1.0.1
-  workflow_dispatch:  # Allows manual run
+      - "v*.*.*"   # runs when you push a version tag like v1.0.1
+  workflow_dispatch: # allows manual runs
+
+permissions:
+  contents: write  # required to create / update releases
 
 jobs:
   build:
@@ -18,31 +21,49 @@ jobs:
         uses: actions/setup-python@v5
       - run: pip install platformio
 
-      - name: Build UNO
+      - name: Build UNO firmware
         run: platformio run -e uno
 
-      - name: Build NANO
+      - name: Build NANO firmware
         run: platformio run -e nano
 
-      - name: Upload Artifacts (firmware files)
+      # Upload UNO firmware
+      - name: Upload UNO firmware
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-binaries
-          path: |
-            .pio/build/uno/firmware.*
-            .pio/build/nano/firmware.*
+          name: firmware-uno
+          path: .pio/build/uno/firmware.hex
+
+      # Upload NANO firmware
+      - name: Upload NANO firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-nano
+          path: .pio/build/nano/firmware.hex
 
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Artifacts
+      # Download UNO firmware and rename
+      - name: Download UNO firmware
         uses: actions/download-artifact@v4
         with:
-          name: firmware-binaries
+          name: firmware-uno
+          path: ./firmware/UNO.hex
 
+      # Download NANO firmware and rename
+      - name: Download NANO firmware
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-nano
+          path: ./firmware/NANO.hex
+
+      # Create / update GitHub release with both firmware files
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: firmware.*
+          files: |
+            ./firmware/UNO.hex
+            ./firmware/NANO.hex
