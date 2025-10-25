@@ -5,21 +5,20 @@
 
 // Security alarm using light or lasers.
 // Using a photoresistor (LDR) to detect if the light is blocked.
+// Includes using a remote to turn off or on the system. (main_nano.cpp)
 
 // [ COMPONENTS ]
 
 // Microcontroller:
-// Arduino Nano, Arduino Uno, ESP32 (Good for future-proofing.), or any other microcontroller that supports C++. Using Arduino Uno for this case.
-// Buzzer, LED (Red, Yellow, Green, White/Laser(Lazer?)). (Bring extra LEDs just in case.)
+// Currently using Arduino Uno
 
 // Resistors: 
-// (NOTE: Pack extra resistors just in case. Or bring the whole set at this point.)
-// 220 ohm resistors (x4), 10K ohm resistor (x1)(Still bring extra for both.)
+// 220 ohm resistors (x4), 10K ohm resistor (x1)
 
 // Other components:
 // Breadboard (x1)
-// Photoresistor (x1), Button (x3), Buzzer (x1)  // Updated: now 3 buttons (reset, silent, power off)
-// Tons and tons of wires. Jumper wires also needed to transfer data / power into the breadboard.
+// Buzzer, LED(s) (Red, Yellow, Green, White Or laser)
+// Photoresistor (x1), Button (x3), Buzzer (x1)
 
 // Optional: 
 // Lazer (x1) (if you want to use a laser instead of a LED.)
@@ -28,45 +27,45 @@
 const int silentIndicatorPin = 2; // LED to show silent mode status                   (yellow)
 const int ledPin = 3; // red led.                                                    (red)
 const int statusled = 4; // Status led.
-const int lightPin = 6; // LED OR Lazer for light sensor indication                   (white)
-const int buzzerPin = 5; // buzzer
-const int silenttogglePin = 7; // button for toggling silent mode
-const int resetPin = 8; // reset button (reset system when tripped) 
-const int armedPin = 9; // armed indicator LED (green when armed, off when tripped)   (green)
-const int powerOffPin = A1; // power off button (acts like first boot)
-const int lightSensorPin = A0; // PhotoResistor connected to A0
-const int irReceiverPin = 11; // IR receiver connected to digital pin 4
+const int lightPin = 6; // Shine light at the LDR                   (white)
+const int buzzerPin = 5; // The buzzer
+const int silenttogglePin = 7; // Button for toggling Silent mode.
+const int resetPin = 8; // Button for resetting.
+const int armedPin = 9; // LED for showing the user that the system is armed.   (green)
+const int powerOffPin = A1; // Power off button. Picked A1 because we were running out of pins.
+const int lightSensorPin = A0; // PhotoResistor (LDR) connected to A0
+const int irReceiverPin = 11; // IR receiver connected to digital pin 11
 
-const int TRIGTRESHOLD = 600; // threshold for light sensor to trigger alarm
+const int TRIGTRESHOLD = 600; // Trigger Treshold for alarm. If LDR reports below treshold, Trigger alarm.
 
-const unsigned long blinkInterval = 150; // interval for blinking LED when tripped
-const unsigned long debounceDelay = 50; // debounce time in ms
+const unsigned long blinkInterval = 150; // Interval for blinking LED when tripped
+const unsigned long debounceDelay = 50; // Debounce time in ms
 
-unsigned long previousMillis = 0; // for blink timing
-unsigned long lastResetDebounceTime = 0; // for reset button debouncing
-unsigned long lastSilentDebounceTime = 0; // for silent toggle button debouncing
-unsigned long lastPowerOffDebounceTime = 0; // for power off button debouncing
+unsigned long previousMillis = 0; // For blink timing
+unsigned long lastResetDebounceTime = 0; // For reset button debouncing
+unsigned long lastSilentDebounceTime = 0; // For silent toggle button debouncing
+unsigned long lastPowerOffDebounceTime = 0; // For power off button debouncing
 
 bool blinkState = false; // LED blink state
-bool tripped = false; // system tripped state
-bool systemOn = true; // system power state
-bool firstBoot = true; // flag for first boot initialization
+bool tripped = false; // System tripped state
+bool systemOn = true; // System power state
+bool firstBoot = true; // Flag for first boot initialization
 
-// debouncer reset button variables n such
+// Debouncer for reset button variables
 bool lastResetState = HIGH;
 bool lastSilentState = HIGH;
 bool silentButtonState = HIGH;
 
-// debouncer power off button variables
+// Debouncer power off button variables
 bool lastPowerOffState = HIGH;
 bool powerOffButtonState = HIGH;
 
-bool silentMode = false; // silent mode state
-bool resetState = HIGH; // current state of reset button
+bool silentMode = false; // The state of silent mode
+bool resetState = HIGH; // The state of reset
 IRrecv irrecv(irReceiverPin);
 decode_results results;
 
-void bootupsequence() {
+void bootupsequence() { // Boot up sequence.
   if (silentMode) {
     digitalWrite(armedPin, HIGH);
     digitalWrite(lightPin, LOW);
@@ -179,15 +178,16 @@ void setup() {
 }
 
 void loop() {
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis(); // Get current ms
   int powerOffReading = digitalRead(powerOffPin);
 
   // Always check IR remote, even if system is off
   if (IrReceiver.decode()) {
     Serial.print("IR code received: ");
     Serial.println(IrReceiver.decodedIRData.decodedRawData, HEX);
-    // Replace 0xFFA25D with your remote's ON/OFF button code
-    if (IrReceiver.decodedIRData.decodedRawData) { // Example: Power button
+    // Info received is always garbage... No idea how to fix this accept adding a security risk.
+    // Currently, allows ALL data even if its garbage or totally random.
+    if (IrReceiver.decodedIRData.decodedRawData) { 
       systemOn = !systemOn;
       if (systemOn) {
         powerOnSequence();
@@ -296,8 +296,6 @@ void loop() {
 
   delay(50);
 }
-// if wood chuck could chuck wood, how much wood would a wood chuck chuck if a wood chuck could chuck wood?
-// a wood chuck would chuck as much wood as a wood chuck could chuck if a wood chuck could chuck wood.
-// why would a wood chuck chuck wood if a wood chuck could chuck wood?
-// because wood chuck could chuck wood if a wood chuck could chuck wood.
+// Agh..
+// No idea what the others did to my wiring.. And i have no idea what they done to the LED part. 
 // if they could chuck wood, they would chuck wood.11:13 AM
