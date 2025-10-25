@@ -1,4 +1,8 @@
 # Security System Wiring Guide
+>[!warning]
+> # **This document is not updated with the current code of this repo. Subject to change.**
+> Will update later in the future.
+
 
 ## Microcontroller: Arduino Uno
 
