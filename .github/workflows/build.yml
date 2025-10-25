@@ -1,0 +1,42 @@
+name: Build and Attach Firmware
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install PlatformIO
+        uses: actions/setup-python@v4
+      - run: pip install platformio
+
+      - name: Build all PlatformIO environments
+        run: platformio run
+
+      - name: Upload compiled firmware artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: firmware-binaries
+          path: "**/.pio/build/*/firmware.*"
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: firmware-binaries
+
+      - name: Create Release and Attach Files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "**/firmware.*"
