@@ -18,14 +18,16 @@ jobs:
         uses: actions/setup-python@v4
       - run: pip install platformio
 
-      - name: Build all PlatformIO environments
+      - name: Build all PlatformIO environments (UNO + NANO)
         run: platformio run
 
       - name: Upload compiled firmware artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-binaries
-          path: "**/.pio/build/*/firmware.*"
+          path: |
+            .pio/build/uno/firmware.hex
+            .pio/build/nanoatmega328/firmware.hex
 
   release:
     needs: build
@@ -41,4 +43,4 @@ jobs:
       - name: Create Release and Attach Files
         uses: softprops/action-gh-release@v1
         with:
-          files: "./firmware/firmware.*"
+          files: "./firmware/*.hex"
