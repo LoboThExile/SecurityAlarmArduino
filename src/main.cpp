@@ -116,7 +116,7 @@ void bootupsequence() { // Boot up sequence.
   digitalWrite(lightPin, HIGH);
   digitalWrite(armedPin, HIGH);
   digitalWrite(statusled, LOW);
-  delay(250); // Extra delay here because LDR for some reason takes old reading??
+  delay(100); // Extra delay here because LDR for some reason takes old reading??
 }
 
 void powerOffSequence() {
@@ -226,7 +226,7 @@ void loop() {
 
   if (lightValue < TRIGTRESHOLD && !tripped) {
     tripped = true;
-    Serial.println("gocha");
+    Serial.println("Tripped!");
     previousMillis = currentMillis;
   }
 
@@ -235,7 +235,7 @@ void loop() {
       previousMillis = currentMillis;
       blinkState = !blinkState;
       digitalWrite(ledPin, blinkState ? HIGH : LOW);
-      Serial.println("im tweakin out");
+      Serial.println("Alarm!!");
       digitalWrite(lightPin, LOW);
       digitalWrite(armedPin, LOW);
 
@@ -298,5 +298,5 @@ void loop() {
   delay(50);
 }
 // Agh..
-// No idea what the others did to my wiring.. And i have no idea what they done to the LED part. 
-// if they could chuck wood, they would chuck wood.11:13 AM
+// No idea what the others did to my wiring.. And I have no idea what they done to the LED part. 
+// Why can't they just leave electronics to electronics people?
