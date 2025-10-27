@@ -116,7 +116,7 @@ void bootupsequence() { // Boot up sequence.
   digitalWrite(lightPin, HIGH);
   digitalWrite(armedPin, HIGH);
   digitalWrite(statusled, LOW);
-  delay(250); // Extra delay here because LDR for some reason takes old reading??
+  delay(100); // Extra delay here because LDR for some reason takes old reading??
 }
 
 void powerOffSequence() {
