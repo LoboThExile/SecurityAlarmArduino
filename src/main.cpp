@@ -76,7 +76,7 @@ void bootupsequence() { // Boot up sequence.
       firstBoot = false;
     }
 
-    delay(1250);
+    delay(500);
     digitalWrite(silentIndicatorPin, LOW);
     digitalWrite(armedPin, LOW);
     digitalWrite(ledPin, HIGH);
@@ -100,7 +100,7 @@ void bootupsequence() { // Boot up sequence.
     firstBoot = false;
   }
 
-  delay(1250);
+  delay(500);
   digitalWrite(silentIndicatorPin, LOW);
 
   tone(buzzerPin, 500);
@@ -189,7 +189,7 @@ void loop() {
     // Info received is always garbage... No idea how to fix this except adding a security risk.
     // Currently, allows ALL data even if its garbage or totally random.
     if (IrReceiver.decodedIRData.decodedRawData) { 
-      systemOn = !systemOn;
+      systemOn = !systemOn; // if system on then turn off else vice versa
       if (systemOn) {
         powerOnSequence();
       } else {
