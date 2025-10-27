@@ -116,6 +116,7 @@ void bootupsequence() { // Boot up sequence.
   digitalWrite(lightPin, HIGH);
   digitalWrite(armedPin, HIGH);
   digitalWrite(statusled, LOW);
+  delay(250); // Extra delay here because LDR for some reason takes old reading??
 }
 
 void powerOffSequence() {
@@ -185,7 +186,7 @@ void loop() {
   if (IrReceiver.decode()) {
     Serial.print("IR code received: ");
     Serial.println(IrReceiver.decodedIRData.decodedRawData, HEX);
-    // Info received is always garbage... No idea how to fix this accept adding a security risk.
+    // Info received is always garbage... No idea how to fix this except adding a security risk.
     // Currently, allows ALL data even if its garbage or totally random.
     if (IrReceiver.decodedIRData.decodedRawData) { 
       systemOn = !systemOn;
