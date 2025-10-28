@@ -62,8 +62,10 @@ bool powerOffButtonState = HIGH;
 
 bool silentMode = false; // The state of silent mode
 bool resetState = HIGH; // The state of reset
-IRrecv irrecv(irReceiverPin);
-decode_results results;
+
+// These
+//IRrecv irrecv(irReceiverPin);
+//decode_results results;
 
 void bootupsequence() { // Boot up sequence.
   if (silentMode) {
