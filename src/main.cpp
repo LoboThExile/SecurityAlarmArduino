@@ -62,8 +62,10 @@ bool powerOffButtonState = HIGH;
 
 bool silentMode = false; // The state of silent mode
 bool resetState = HIGH; // The state of reset
-IRrecv irrecv(irReceiverPin);
-decode_results results;
+
+// These functions are for V3. DO not use this. Keeping this here just for future cases.
+//IRrecv irrecv(irReceiverPin);
+//decode_results results;
 
 void bootupsequence() { // Boot up sequence.
   if (silentMode) {
@@ -186,7 +188,7 @@ void loop() {
   if (IrReceiver.decode()) {
     Serial.print("IR code received: ");
     Serial.println(IrReceiver.decodedIRData.decodedRawData, HEX);
-    // Info received is always garbage... No idea how to fix this except adding a security risk.
+    // Info received is always garbage...
     // Currently, allows ALL data even if its garbage or totally random.
     if (IrReceiver.decodedIRData.decodedRawData) { 
       systemOn = !systemOn; // if system on then turn off else vice versa
@@ -298,5 +300,3 @@ void loop() {
   delay(50);
 }
 // Agh..
-// No idea what the others did to my wiring.. And I have no idea what they done to the LED part. 
-// Why can't they just leave electronics to electronics people?
