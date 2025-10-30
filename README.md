@@ -1,10 +1,26 @@
-# SecurityAlarmArduino
+<div align="center">
+  <h1>/\/\/\/[ SecurityAlarmArduino ]\/\/\/\/\</h1>
+  <b>This Project is also known as LasecPro</b>
+  <br>
+  <p>A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.</p>
+</div>
 
-A Security Alarm system using an Arduino with lasers or an LED shining light onto a photoresistor to detect intrusions.
+<div align="center">
+  <br>
+  
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/LoboThExile/SecurityAlarmArduino?style=for-the-badge&logo=git&logoColor=%23B8BACF&labelColor=%235A5C66&color=%23B8BACF)          ![GitHub contributors](https://img.shields.io/github/contributors/LoboThExile/SecurityAlarmArduino?style=for-the-badge&logo=hoppscotch&logoColor=%23C8C6D7&labelColor=%235A5C66&color=%23B8BACF)            ![GitHub last commit](https://img.shields.io/github/last-commit/LoboThExile/SecurityAlarmArduino?display_timestamp=author&style=for-the-badge&logo=filen&logoColor=%23B8BACF&labelColor=%235A5C66&color=%23B8BACF)
 
-### [Wiring](WIRING.md)
 
-### Made for PBL.
+</div>
+
+---
+
+<div align="center">
+  
+### **[Wiring here (OUTDATED)](WIRING.md)** <br>
+  <b> This repo was for a PBL project.</b>
+  
+</div>
 
 ## Components
 
