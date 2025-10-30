@@ -63,7 +63,7 @@ bool powerOffButtonState = HIGH;
 bool silentMode = false; // The state of silent mode
 bool resetState = HIGH; // The state of reset
 
-// These
+// These functions are for V3. DO not use this. Keeping this here just for future cases.
 //IRrecv irrecv(irReceiverPin);
 //decode_results results;
 
